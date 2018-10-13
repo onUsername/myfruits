@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加收货地址</title>
+</head>
+<body>
+
+<form action="{% url "user:add_site" %}" method="post">
+{% csrf_token %}
+    收件人：<input type="text" name="sitename"><br/>
+    收件人电话:<input type="text" name="sitephone"><br/>
+    地址:<textarea class="address" name="address"></textarea><br/>
+    设置默认地址:<input type="checkbox" name="is_default" value="1"><br/>
+    <input type="submit" value="添加">
+</form>
+</body>
+</html>
