@@ -130,3 +130,4 @@ EMAIL_PORT = 25
 EMAIL_HOST_USER = "3127275592@qq.com"
 EMAIL_HOST_PASSWORD = "trmyjoebwuojdeaf"
 EMAIL_FROM = "天天生鲜<3127275592@qq.com>"
+

@@ -3,15 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <title>修改地址</title>
+    {% load static from staticfiles %}
+    <script src="{% static "js/jquery-1.12.4.min.js" %}"></script>
 </head>
 <body>
 <form action="{% url "user:update_site" id %}" method="post">
 {% csrf_token %}
     收件人：<input type="text" name="sitename" value="{{ site.sitename }}"><br/>
     收件人电话:<input type="text" name="sitephone" value="{{ site.sitephone }}"><br/>
-    地址:<textarea class="address" name="address">{{ site.address }}</textarea><br/>
+    <table>
+    省：<select name="sheng_id" id="sheng_id">
+        {% for i in TArea_sheng %}
+            {% if i.areaid == sheng_id %}
+                <option value="{{ i.areaid }}" selected>{{ i.areaname }}</option>
+            {% else %}
+                <option value="{{ i.areaid }}">{{ i.areaname }}</option>
+            {% endif %}
+        {% endfor %}
+        </select>
+    市：<select name="shi_id" id="shi_id">
+        {% for i in TArea_shi %}
+            {% if i.areaid == shi_id %}
+                <option value="{{ i.areaid }}" selected>{{ i.areaname }}</option>
+            {% else %}
+                <option value="{{ i.areaid }}">{{ i.areaname }}</option>
+            {% endif %}
+        {% endfor %}</select>
+    县：<select name="xian_id" id="xian_id">
+        {% for i in TArea_xian %}
+            {% if i.areaid == xian_id %}
+                <option value="{{ i.areaid }}" selected>{{ i.areaname }}</option>
+            {% else %}
+                <option value="{{ i.areaid }}">{{ i.areaname }}</option>
+            {% endif %}
+        {% endfor %}</select>
+    </table>
+    详细地址:<textarea class="address" name="detail_address">{{ detail_address }}</textarea><br/>
     设置默认地址:<input type="checkbox" name="is_default" value="1"><br/>
     <input type="submit" value="修改">
 </form>
 </body>
 </html>
+  <script>
+$(function(){
+            seach_sheng()
+            change_sheng()
+            change_shi()
+        })
+        function seach_sheng() {
+            $.ajax({
+                url:"/user/seach_sheng/",
+                "success":function (data) {
+                    console.info(data)
+                    sheng_list = eval('('+data.sheng_list+')')
+                    console.info(sheng_list)
+                    $.each(sheng_list,function (index,item) {
+                        var option= '<option value="'+item.pk+'">'+item.fields.areaname+'</option>'
+                        $('#sheng_id').append(option)
+                    })
+                }
+            })
+        }
+        function change_sheng(){
+            $('#sheng_id').change(function(){
+                 sheng_id = $('#sheng_id').val();
+                 $('#shi_id').html('<option value="0">---------</option>')
+                 $('#xian_id').html('<option value="0">---------</option>')
+                 if(sheng_id!=0){
+                     $.ajax({
+                         url: '/user/seach_shi/',
+                         data: {'sheng_id': sheng_id},
+                         "success": function (data) {
+                             {#console.info(data)#}
+                             shi_list = eval('(' + data.shi_list + ')')
+                             console.info(shi_list)
+                             $.each(shi_list, function (index, item) {
+                                 var option = '<option value="' + item.pk + '">' + item.fields.areaname + '</option>';
+                                 $('#shi_id').append(option);
+                             });
+                         }
+                     });
+                 }
+            });
+        };
+        function change_shi(){
+            $('#shi_id').change(function(){
+                 shi_id = $('#shi_id').val();
+                 $('#xian_id').html('<option value="0">---------</option>')
+                 if(shi_id!=0){
+                     $.ajax({
+                         url: '/user/seach_xian/',
+                         data: {'shi_id': shi_id},
+                         success: function (data) {
+                             xian_list = eval('(' + data.xian_list + ')')
+                             console.info(xian_list)
+                             $('#xian_id').html('<option value="0">---------</option>')
+                             $.each(xian_list, function (index, item) {
+                                 var option = '<option value="' + item.pk + '">' + item.fields.areaname + '</option>';
+                                 $('#xian_id').append(option);
+                             });
+                         }
+                     });
+                 }
+            });
+        };
+    </script>

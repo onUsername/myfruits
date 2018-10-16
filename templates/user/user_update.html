@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修改用户信息</title>
+</head>
+<body>
+<form action="" method="post">
+    {% csrf_token %}
+    用户名：<input type="text" value="{{ user.username }}" readonly><br/>
+    电话：<input type="text" value="{{ user.phone }}" name="phone"><br/>
+    邮箱：<input type="email" value="{{ user.email }}" name="email"><br/>
+    如需修改密码，请在登陆界面,输入帐号和修改后的密码,点击忘记密码通过邮件链接进行修改<br/>
+    <input type="submit" value="确认修改">
+</form>
+</body>
+</html>

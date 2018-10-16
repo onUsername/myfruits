@@ -4,7 +4,6 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer,Signature
 from django.core.mail import send_mail
 from user.models import *
 
-from utils.user_util import my_md5
 from utils.views_util import *
 from utils.user_util import *
 from utils.tesk import task_send_mail
@@ -14,6 +13,11 @@ from io import BytesIO
 
 import urllib,json
 from myfruits import settings
+
+
+from django.http import *
+
+from django.core import serializers
 # Create your views here.
 
 def check_username(request):
@@ -205,8 +209,8 @@ def login(request):
         remember = request.POST.get("remember")
         # print(remember)
         user = User.objects.filter(username=username, password=my_md5(password))
-        if user[0].is_activate:
-            if user:
+        if user:
+            if user[0].is_activate:
                 request.session["login_user"] = username
                 # request.session["login_user_id"] = user[0].id
                 # 得到session中保存的路径
@@ -223,9 +227,9 @@ def login(request):
                     resp.set_cookie("remrmber_user_name", username, 0)
                 return resp
             else:
-                return render(request, "user/login.html", {"error_link": "账号或密码错误"})
+                return render(request, "user/login.html", {"error_link": "此帐号尚未激活，请前往注册邮箱激活"})
         else:
-            return render(request, "user/login.html", {"error_link": "此帐号尚未激活，请前往注册邮箱激活"})
+            return render(request, "user/login.html", {"error_link": "账号或密码错误"})
 
 
 
@@ -233,13 +237,13 @@ def logout(request):
     request.session.flush()
     return redirect(reverse("user:login"))
 
-
+@check_user
 def user_center_info(request):
     login_user = request.session.get("login_user")
     user = User.objects.get(username=login_user)
     return render(request,"user/user_center_info.html",{"login_user":login_user,"user":user})
 
-
+@check_user
 def user_update(request):
     if request.method == "GET":
         login_user = request.session.get("login_user")
@@ -248,24 +252,25 @@ def user_update(request):
     else:
         login_user=request.session.get("login_user")
         user = User.objects.get(username=login_user)
-        password1 =request.POST.get("password1")
-        if user.password!=my_md5(password1):
-            return render(request, "user/user_update.html", {"login_user": login_user, "error_link": "密码不正确"})
-        username = request.POST.get("username","").strip()
-        password2 = request.POST.get("password2", "").strip()
-        phone = request.POST.get("phone", "").strip()
-        adddress = request.POST.get("address", "").strip()
-        if len(password2)>=6 and len(password2)<=10:
-            user.password = my_md5(password2)
-            user.phone = phone
-            user.address=adddress
-            user.save()
-            return redirect(reverse("user:user_index"))
-        return render(request,"user/user_update.html",{"login_user":login_user,"user":user,
-                                                       "error_link":"密码必须为6-10位"})
+        # password1 =request.POST.get("password1")
+        # if user.password!=my_md5(password1):
+        #     return render(request, "user/user_update.html", {"login_user": login_user, "error_link": "密码不正确"})
+        # username = request.POST.get("username","").strip()
+        # password2 = request.POST.get("password2", "").strip()
+        phone = request.POST.get("phone").strip()
+        email = request.POST.get("email").strip()
+        # adddress = request.POST.get("address", "").strip()
+        # if len(password2)>=6 and len(password2)<=10:
+        #     user.password = my_md5(password2)
+        user.phone = phone
+        user.email=email
+        user.save()
+        return redirect(reverse("user:user_center_site"))
+        # return render(request,"user/user_update.html",{"login_user":login_user,"user":user,
+        #                                                "error_link":"密码必须为6-10位"})
 
 
-# @check_user
+@check_user
 def user_center_site(request):
     user = User.objects.get(username=request.session.get("login_user"))
     default_site_list = Site.objects.filter(u_id=user,is_default=True)
@@ -273,6 +278,8 @@ def user_center_site(request):
 
     return render(request,"user/user_center_site.html",{"site_list":site_list,"user":user,"default_site_list":default_site_list})
 
+
+@check_user
 def add_site(request):
     if request.method=="GET":
         return render(request,"user/add_site.html")
@@ -280,7 +287,14 @@ def add_site(request):
         user = User.objects.get(username=request.session.get("login_user"))
         sitename= request.POST.get("sitename")
         sitephone = request.POST.get("sitephone")
-        address = request.POST.get("address").strip()
+
+        sheng =  TArea.objects.get(areaid=request.POST.get("sheng_id")).areaname
+        shi =  TArea.objects.get(areaid=request.POST.get("shi_id")).areaname
+        xian = TArea.objects.get(areaid=request.POST.get("xian_id")).areaname
+        detail_address = request.POST.get("detail_address")
+
+        address = "%s-%s-%s-%s"%(sheng,shi,xian,detail_address)
+        print(address)
         is_default = request.POST.get("is_default")
 
         site= Site.objects.create(sitename=sitename,sitephone=sitephone,address=address,u_id=user)
@@ -290,6 +304,7 @@ def add_site(request):
                 site_li = Site.objects.get(u_id=user,is_default=True)
                 site_li.is_default =False
                 site_li.save()
+                site.is_default = True
             except:
                 site.is_default=True
         else:
@@ -297,15 +312,45 @@ def add_site(request):
         site.save()
         return redirect(reverse("user:user_center_site"))
 
+
+@check_user
 def update_site(request,id):
     if request.method=="GET":
-        site = Site.objects.filter(id=id)
-        return render(request,"user/update_site.html",{"site":site[0],"id":id})
+
+        site = Site.objects.get(id=id)
+        address=site.address
+        address_list = address.split("-")
+
+
+
+        TArea_sheng = TArea.objects.filter(parentid=-1)
+
+        sheng_id = TArea.objects.get(areaname=address_list[0]).areaid
+
+        TArea_shi = TArea.objects.filter(parentid=sheng_id)
+
+        shi_id = TArea.objects.get(areaname=address_list[1],parentid=sheng_id).areaid
+        TArea_xian = TArea.objects.filter(parentid=shi_id)
+
+        xian_id = TArea.objects.get(areaname=address_list[2],parentid=shi_id).areaid
+
+        detail_address = address_list[3]
+
+        return render(request,"user/update_site.html",{"site":site,"id":id,"TArea_sheng":TArea_sheng,"TArea_shi":TArea_shi,"TArea_xian":TArea_xian,
+                                                       "sheng_id":sheng_id,"shi_id":shi_id,"xian_id":xian_id,"detail_address":detail_address})
     else:
         user = User.objects.get(username=request.session.get("login_user"))
         site = Site.objects.get(id=id)
         site.sitename = request.POST.get("sitename")
-        site.address = request.POST.get("address")
+
+        sheng = TArea.objects.get(areaid=request.POST.get("sheng_id")).areaname
+        shi = TArea.objects.get(areaid=request.POST.get("shi_id")).areaname
+        xian = TArea.objects.get(areaid=request.POST.get("xian_id")).areaname
+        detail_address = request.POST.get("detail_address")
+
+        address = "%s-%s-%s-%s" % (sheng, shi, xian, detail_address)
+
+        site.address = address
         site.sitephone = request.POST.get("sitephone")
         site.u_id = user
         is_default = request.POST.get("is_default")
@@ -315,6 +360,7 @@ def update_site(request,id):
                 site_li = Site.objects.get(u_id=user,is_default=True)
                 site_li.is_default =False
                 site_li.save()
+                site.is_default = True
             except:
                 site.is_default=True
         else:
@@ -323,10 +369,38 @@ def update_site(request,id):
         return redirect(reverse("user:user_center_site"))
 
 
+@check_user
 def del_site(request,id):
     Site.objects.get(id=id).delete()
     return redirect(reverse("user:user_center_site"))
 
+
+
+def seach_sheng(request):
+    sheng_list = TArea.objects.filter(parentid=-1)
+    print(sheng_list)
+    content = {
+        "sheng_list":serializers.serialize("json",sheng_list)
+    }
+    return JsonResponse(content)
+
+def seach_shi(request):
+    sheng_id = request.GET.get("sheng_id")
+    shi_list = TArea.objects.filter(parentid=sheng_id)
+    content = {
+        "shi_list":serializers.serialize("json",shi_list)
+    }
+    return JsonResponse(content)
+
+def seach_xian(request):
+    shi_id = request.GET.get("shi_id")
+    print(shi_id)
+    xian_list = TArea.objects.filter(parentid=shi_id)
+    print(xian_list)
+    content = {
+        "xian_list":serializers.serialize("json",xian_list)
+    }
+    return JsonResponse(content)
 
 def index(requests):
     return render(requests, "user/index.html")
