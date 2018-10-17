@@ -4,7 +4,6 @@ from tinymce.models import HTMLField
 # Create your models here.
 
 class GoodsType(models.Model):
-    pass
     name = models.CharField(max_length=100,verbose_name="种类名称")
     image = models.ImageField(upload_to="type",verbose_name="商品类型图片")
 
