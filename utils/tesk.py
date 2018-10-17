@@ -1,14 +1,11 @@
 from celery import Celery
 from django.core.mail import send_mail
+import django
+import os
 
-
+# celery -A utils.tesk worker -l info
 app =Celery("utils.tesk",broker="redis://192.168.12.216:6379/3")
 
-
-
-import django
-
-import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myfruits.settings")
 django.setup()
 

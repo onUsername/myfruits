@@ -42,6 +42,7 @@ INSTALLED_APPS = (
 
     "user",
     "fruits",
+    'tinymce',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -131,3 +132,8 @@ EMAIL_HOST_USER = "3127275592@qq.com"
 EMAIL_HOST_PASSWORD = "trmyjoebwuojdeaf"
 EMAIL_FROM = "天天生鲜<3127275592@qq.com>"
 
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'advanced',
+    'width': 600,
+    'height': 400,
+}

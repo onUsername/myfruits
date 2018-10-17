@@ -19,6 +19,7 @@ from . import views
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^tinymce/', include('tinymce.urls')),
     url('^user/',include("user.urls",namespace="user")),
     url('^fruits/',include("fruits.urls",namespace="fruits")),
     url('^',views.index),

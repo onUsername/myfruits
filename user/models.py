@@ -25,7 +25,7 @@ class TArea(models.Model):
         return ("name=%s"%self.areaname)
 
     class Meta:
-        managed = False
+    #     managed = False
         db_table = 'T_Area'
 
 
@@ -39,7 +39,7 @@ class Site(models.Model):
     u_id = models.ForeignKey('User')
 
     class Meta:
-        managed = False
+        # managed = False
         db_table = 'user_site'
 
 
@@ -49,8 +49,8 @@ class User(models.Model):
     phone = models.CharField(max_length=11)
     email = models.CharField(max_length=254)
     is_activate = models.BooleanField(default=False)
-    isdelete = models.IntegerField(db_column='isDelete')  # Field name made lowercase.
+    isdelete = models.IntegerField(default=False,db_column='isDelete')  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        # managed = False
         db_table = 'user_user'
