@@ -13,17 +13,20 @@
 		<div class="header">
 			<div class="welcome fl">欢迎来到天天生鲜!</div>
 			<div class="fr">
-				<div class="login_info fl">
-					欢迎您：<em>张 山</em>
+                {% if user %}
+				<div class="login_btn fl">
+					欢迎您：<em>{{ user.username }}</em>
 				</div>
+                {% else %}
 				<div class="login_btn fl">
 					<a href="login.html">登录</a>
 					<span>|</span>
 					<a href="register.html">注册</a>
 				</div>
+                {% endif %}
 				<div class="user_link fl">
 					<span>|</span>
-					<a href="../user/user_center_info.html">用户中心</a>
+					<a href="{% url "user:user_center_info" %}">用户中心</a>
 					<span>|</span>
 					<a href="cart.html">我的购物车</a>
 					<span>|</span>
@@ -89,7 +92,10 @@
 				<div class="num_add fl">
 					<input type="text" class="num_show fl" value="1">
 					<a href="javascript:;" class="add fr">+</a>
-					<a href="javascript:;" class="minus fr">-</a>	
+					<a href="javascript:;" class="minus fr">-</a>
+                    {% for i in same_spu_sku %}
+                    <a href="">{{ i.name }}</a>
+                    {% endfor %}
 				</div> 
 			</div>
 			<div class="total">总价：<em>16.80元</em></div>
@@ -107,8 +113,8 @@
 				<ul>
                     {% for i in goodssku_list %}
 					<li>
-						<a href="#"><img src="{{ i.image.url }}"></a>
-						<h4><a href="#">{{ i.name }}</a></h4>
+						<a href="{% url "fruits:detail" i.id %}"><img src="{{ i.image.url }}"></a>
+						<h4><a href="{% url "fruits:detail" i.id %}">{{ i.name }}</a></h4>
 						<div class="prize">￥{{ i.price }}</div>
 					</li>
                     {% endfor %}
@@ -147,7 +153,7 @@
 	</div>
 	<div class="add_jump"></div>
 
-	<script type="text/javascript" src="../../static/js/jquery-1.12.2.js"></script>
+	<script type="text/javascript" src="../../static/js/jquery-1.12.4.min.js"></script>
 	<script type="text/javascript">
 		var $add_x = $('#add_cart').offset().top;
 		var $add_y = $('#add_cart').offset().left;

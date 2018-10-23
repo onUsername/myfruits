@@ -18,6 +18,8 @@ from myfruits import settings
 from django.http import *
 
 from django.core import serializers
+from redis import StrictRedis
+from fruits.models import *
 # Create your views here.
 
 def check_username(request):
@@ -241,7 +243,12 @@ def logout(request):
 def user_center_info(request):
     login_user = request.session.get("login_user")
     user = User.objects.get(username=login_user)
-    return render(request,"user/user_center_info.html",{"login_user":login_user,"user":user})
+
+    conn=StrictRedis('192.168.12.216')
+    history=conn.lrange('history_%d'% user.id,0,-1)
+    goodssku=GoodsSKU.objects.filter(id__in=history)
+
+    return render(request,"user/user_center_info.html",{"goodssku":goodssku,"user":user})
 
 @check_user
 def user_update(request):
@@ -275,7 +282,6 @@ def user_center_site(request):
     user = User.objects.get(username=request.session.get("login_user"))
     default_site_list = Site.objects.filter(u_id=user,is_default=True)
     site_list = Site.objects.filter(u_id=user,is_default=False)
-
     return render(request,"user/user_center_site.html",{"site_list":site_list,"user":user,"default_site_list":default_site_list})
 
 

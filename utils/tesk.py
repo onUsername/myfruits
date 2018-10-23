@@ -6,6 +6,12 @@ from django.conf import settings
 
 # celery -A utils.tesk worker -l info
 
+#需要启动的配置
+#sudo /etc/redis/redis.conf
+#sudo /usr/bin/fdfs_trackerd /etc/fdfs/tracker.conf
+#sudo /usr/bin/fdfs_storaged /etc/fdfs/storage.conf
+#sudo /usr/local/nginx/sbin/nginx
+
 import django
 import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myfruits.settings")
