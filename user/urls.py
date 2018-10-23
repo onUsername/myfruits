@@ -26,8 +26,8 @@ urlpatterns = [
     url(r"del_site/(\d+)$",views.del_site,name="del_site"),
 
     url(r"seach_sheng/$", views.seach_sheng, name="seach_sheng"),
-    url(r"seach_shi/$", views.seach_shi, name="seach_shi"),
-    url(r"seach_xian/$", views.seach_xian, name="seach_xian"),
+    url(r"seach_shi/(\d+)$", views.seach_shi, name="seach_shi"),
+    url(r"seach_xian/(\d+)$", views.seach_xian, name="seach_xian"),
 
     url(r"^",views.index,name="index"),
 ]

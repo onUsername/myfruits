@@ -26,13 +26,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TArea',
             fields=[
-                ('areaid', models.AutoField(primary_key=True, db_column='areaId', serialize=False)),
-                ('areacode', models.CharField(max_length=50, db_column='areaCode')),
-                ('areaname', models.CharField(max_length=20, db_column='areaName')),
-                ('level', models.IntegerField(blank=True, null=True)),
-                ('citycode', models.CharField(blank=True, max_length=50, db_column='cityCode', null=True)),
-                ('center', models.CharField(blank=True, max_length=50, null=True)),
-                ('parentid', models.IntegerField(blank=True, db_column='parentId', null=True)),
+                ('areaid', models.AutoField(db_column='areaId', primary_key=True, serialize=False)),
+                ('areacode', models.CharField(db_column='areaCode', max_length=50)),
+                ('areaname', models.CharField(db_column='areaName', max_length=20)),
+                ('level', models.IntegerField(null=True, blank=True)),
+                ('citycode', models.CharField(db_column='cityCode', null=True, blank=True, max_length=50)),
+                ('center', models.CharField(null=True, blank=True, max_length=50)),
+                ('parentid', models.IntegerField(db_column='parentId', null=True, blank=True)),
             ],
             options={
                 'db_table': 'T_Area',
@@ -42,12 +42,12 @@ class Migration(migrations.Migration):
             name='User',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('username', models.CharField(max_length=20, unique=True)),
+                ('username', models.CharField(unique=True, max_length=20)),
                 ('password', models.CharField(max_length=36)),
                 ('phone', models.CharField(max_length=11)),
                 ('email', models.CharField(max_length=254)),
                 ('is_activate', models.BooleanField(default=False)),
-                ('isdelete', models.IntegerField(db_column='isDelete')),
+                ('isdelete', models.IntegerField(db_column='isDelete', default=False)),
             ],
             options={
                 'db_table': 'user_user',

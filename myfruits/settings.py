@@ -137,3 +137,10 @@ TINYMCE_DEFAULT_CONFIG = {
     'width': 600,
     'height': 400,
 }
+
+#FastDFS设置-自定义存储类
+DEFAULT_FILE_STORAGE = 'utils.fdfs.storage_util.FDFSStorage'
+#FastDFS设置-可混段配置文件
+FDFS_CLIENT_CONF = 'utils/fdfs/client.conf'
+#FastDFS设置-url
+FDFS_URL = 'http://192.168.12.216:8887/'
