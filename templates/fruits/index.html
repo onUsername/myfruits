@@ -62,7 +62,7 @@
 	<div class="center_con clearfix">
 		<ul class="subnav fl">
             {% for i in types %}
-                <li><a href="#model01" class="{{ i.logo }}">{{ i.name }}</a></li>
+                <li><a href="#model0{{ forloop.counter }}" class="{{ i.logo }}">{{ i.name }}</a></li>
             {% endfor %}
 		</ul>
 		<div class="slide fl">
@@ -101,8 +101,8 @@
                 {% for banner in type.image_banners %}
 
 				<li>
-					<h4><a href="#">{{ banner.sku.name }}</a></h4>
-					<a href="#"><img src="{{ banner.sku.image.url }}"></a>
+					<h4><a href="{% url "fruits:detail" banner.sku.id %}">{{ banner.sku.name }}</a></h4>
+					<a href="{% url "fruits:detail" banner.sku.id %}"><img src="{{ banner.sku.image.url }}"></a>
 					<div class="prize">¥{{ banner.sku.price }}</div>
 				</li>
                 {% endfor %}
