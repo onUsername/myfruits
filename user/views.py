@@ -246,7 +246,13 @@ def user_center_info(request):
 
     conn=StrictRedis('192.168.12.216')
     history=conn.lrange('history_%d'% user.id,0,-1)
-    goodssku=GoodsSKU.objects.filter(id__in=history)
+    # goodssku=GoodsSKU.objects.filter(id__in=history)
+    # goodssku=[]
+    # for i in history:
+    #     goodssku=GoodsSKU.objects.get(id=i)
+    #     goodssku.append(goodssku)
+    #
+    goodssku=[GoodsSKU.objects.get(id=i) for i in history]
 
     return render(request,"user/user_center_info.html",{"goodssku":goodssku,"user":user})
 

@@ -2,6 +2,7 @@ import hashlib
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 import uuid,os
+from user.models import *
 
 def my_md5(value):
     m = hashlib.md5()
@@ -16,6 +17,7 @@ def check_user(func):
             args[0].session["path"] = args[0].path
             args[0].session["error_link"] = "请先进行登录"
             return redirect(reverse("user:login"))
+        # user=User.objects.get(username=username)
         return func(*args, **kwargs)
 
     return inner

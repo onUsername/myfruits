@@ -1,5 +1,6 @@
 from django.db import models
 from tinymce.models import HTMLField
+from user.models import User
 
 # Create your models here.
 
@@ -101,3 +102,22 @@ class IndexPromotionBanner(models.Model):
         verbose_name='主页活动促销'
         verbose_name_plural=verbose_name
 
+
+class GoodsComment(models.Model):
+    user=models.ForeignKey('User')
+    goods=models.ForeignKey('GoodsSKU')
+
+    com=models.CharField(max_length=256,verbose_name='评论')
+    com_time=models.TimeField()
+    pid=models.ForeignKey('GoodsComment',default=-1)
+
+    class Meta:
+        abstract = True
+
+class car(models.Model):
+    user=models.ForeignKey("User")
+    goods=models.ForeignKey("GoodsSKU")
+    num=models.IntegerField(max_length=20,default=1)
+
+    class Meta:
+        abstract = True

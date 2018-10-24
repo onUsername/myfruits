@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     "user",
     "fruits",
     'tinymce',
+    'haystack',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -145,7 +146,7 @@ FDFS_CLIENT_CONF = 'utils/fdfs/client.conf'
 #FastDFS设置-url
 FDFS_URL = 'http://192.168.12.216:8887/'
 
-#
+#首页静态化
 CACHES = {
     "default": {
         "BACKEND": "redis_cache.cache.RedisCache",
@@ -153,3 +154,20 @@ CACHES = {
         'TIMEOUT': 60,
     },
 }
+
+#配置搜索引擎
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        #使用whoosh引擎
+        'ENGINE': 'haystack.backends.whoosh_cn_backend.WhooshEngine',
+        #索引文件路径
+        'PATH': os.path.join(BASE_DIR, 'whoosh_index'),
+    }
+}
+
+#当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+#设置连接redis的对象
+from redis import StrictRedis
+REDIS_CONN=StrictRedis("192.168.12.216")

@@ -92,7 +92,7 @@
 			<div class="subtitle fl">
 				<span>|</span>
 				{% for banner in type.title_banners %}
-				<a href="#">{{ banner.sku.name }}</a>
+				<a href="{% url "fruits:detail" banner.sku.id %}">{{ banner.sku.name }}</a>
 				{% endfor %}
 			</div>
 			<a href="#" class="goods_more fr" id="fruit_more">查看更多 ></a>

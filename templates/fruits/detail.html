@@ -37,10 +37,12 @@
 	</div>
 
 	<div class="search_bar clearfix">
-		<a href="index.html" class="logo fl"><img src="{% static "images/logo.png" %}"></a>
+		<a href="{% url "fruits:index" %}" class="logo fl"><img src="{% static "images/logo.png" %}"></a>
 		<div class="search_con fl">
-			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
-			<input type="button" class="input_btn fr" name="" value="搜索">
+            <form action="/search/" method="get">
+                <input type="text" class="input_text fl" name="q" placeholder="搜索商品" value="{{ query }}">
+			    <input type="submit" class="input_btn fr" name="" value="搜索">
+            </form>
 		</div>
 		<div class="guest_cart fr">
 			<a href="cart.html" class="cart_name fl">我的购物车</a>
@@ -125,16 +127,21 @@
 		<div class="r_wrap fr clearfix">
 			<ul class="detail_tab clearfix">
 				<li class="active">商品介绍</li>
-				<li>评论</li>
+				<li class="comment">评论</li>
 			</ul>
 
-			<div class="tab_content">
+			<div class="tab_content" style="display: block">
 				<dl>
 					<dt>商品详情：</dt>
 					<dd>{{ goodsspu.detail|safe }}</dd>
 				</dl>
 			</div>
-
+            <div class="tab_comment" style="display: none">
+				<dl>
+					<dt>商品评论：</dt>
+					<dd>{{ goodsspu.detail|safe }}</dd>
+				</dl>
+			</div>
 		</div>
 	</div>
 
@@ -161,18 +168,45 @@
 		var $to_x = $('#show_count').offset().top;
 		var $to_y = $('#show_count').offset().left;
 
-		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
-		$('#add_cart').click(function(){
-			$(".add_jump").stop().animate({
-				'left': $to_y+7,
-				'top': $to_x+7},
-				"fast", function() {
-					$(".add_jump").fadeOut('fast',function(){
-						$('#show_count').html(2);
-					});
+        $("#add_cart").click(function(){
+            $.ajax({
+                "url":"{% url "fruits:add_car" %}",
+                "data":{
+                        "id":{{ goodssku.id }},
+                        "num":$(".num_show").val()
+                },
+                "success":function (data) {
+                    if(data.res==5){
+                        $(".add_jump").css({"left":$add_y+80,"top":$add_x+10,"display":"block"})
+                        $(".add_jump").stop().animate({
+                            "left":$to_y+7,
+                            "top":$to_x+7},
+                            "slow",function () {
+                                $(".add_jump").fadeOut('fast',function () {
+                                    $("#show_count").html(data.total_count);
 
-			});
-		})
+                                })
+                            }
+                        )
+                    }
+                    else{
+                        alert(data.errmsg)
+                    }
+                }
+            })
+        })
+        $(function () {
+                    $(".active").click(function () {
+                        $(".tab_content").css("display","block")
+                        $(".tab_comment").css("display","none")
+
+                    })
+            $(".comment").click(function () {
+                        $(".tab_content").css("display","none")
+                        $(".tab_comment").css("display","block")
+
+                    })
+                })
 	</script>
 	
 </body>

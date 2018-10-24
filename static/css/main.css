@@ -271,12 +271,13 @@ html,body{height:100%}
 
 .detail_tab li{height:34px;line-height:34px;padding:0 30px;font-size:14px;color:#333333;float:left;border:1px solid #e8e8e8;border-bottom:0px;cursor:pointer;background-color:#faf8f8}
 
-.detail_tab li.active{border-top:2px solid #37ab40;position:relative;background-color:#fff;border-left:1px solid #37ab40;border-right:1px solid #37ab40;top:-1px;height:35px;}
+.detail_tab li.active,li.comment{border-top:2px solid #37ab40;position:relative;background-color:#fff;border-left:1px solid #37ab40;border-right:1px solid #37ab40;top:-1px;height:35px;}
 
 .tab_content dt{margin-top:10px;font-size:16px;color:#044d39}
 .tab_content dd{line-height:24px;margin-top:5px;}
 
-
+.tab_comment dt{margin-top:10px;font-size:16px;color:#044d39}
+.tab_comment dd{line-height:24px;margin-top:5px;}
 /* 登录页 */
 
 .login_top{width:960px;height:130px;margin:0 auto;}
