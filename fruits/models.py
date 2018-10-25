@@ -122,3 +122,7 @@ class IndexPromotionBanner(models.Model):
 #
 #     class Meta:
 #         abstract = True
+
+
+# class Order(models.Model):
+#     user=models.ForeignKey("User")

@@ -12,7 +12,11 @@ from myfruits import settings
 
 # Create your views here.
 def index(request):
-    user=User.objects.get(username=request.session.get('login_user'))
+    user = User.objects.get(username=request.session.get('login_user'))
+    if user:
+        total_count=get_car_count(user)
+    else:
+        total_count=0
     content = cache.get('cache_index')
     if content==None:
         print("设置缓存")
@@ -34,11 +38,10 @@ def index(request):
             'goods_banners':goods_banners,
             'promotion_banners':promotion_banners,
         }
-
         cache.set('cache_index',content,3600)
 
-    car_count=0
-    content.update(car_count=car_count,user=user)
+
+    content.update(total_count=total_count,user=user)
     return render(request,"fruits/index.html",content)
 
 
@@ -54,6 +57,9 @@ def detail(request,id):
         conn.lpush(history_key,id)
         #只保存用户最新浏览的5条信息
         conn.ltrim(history_key,0,4)
+        total_count=get_car_count(user)
+    else:
+        total_count=0
 
     types=GoodsType.objects.all()
     goodssku=GoodsSKU.objects.get(id=id)
@@ -67,7 +73,7 @@ def detail(request,id):
              "types":types,
              "goodsspu":goodsspu,
              "goodssku_list":goodssku_list,
-             "user":user,
+             "user":user,"total_count":total_count,
              "same_spu_sku":same_spu_sku}
     return render(request,"fruits/detail.html",content)
 
@@ -117,13 +123,17 @@ def list(request,type_id,pn):
     else:
         pages = range(pn-2,pn+3)
 
-    car_count=0
+    user = User.objects.get(username=request.session.get('login_user'))
+    if user:
+        total_count=get_car_count(user)
+    else:
+        total_count=0
     txt={
         "types":types,"type":type,
         "pages":pages,"my_page":my_page,
         "goodssku_list":goodssku_list,
-        "car_count":car_count,
-        "sort":sort
+        "total_count":total_count,
+        "sort":sort,"user":user
     }
     return render(request,"fruits/list.html",txt)
 
@@ -134,7 +144,6 @@ def add_car(request):
 
     num=request.GET.get("num")
     user=User.objects.get(username=request.session.get("login_user"))
-    print(user)
     if not all([id,num]):
         return JsonResponse({'res':1})
     #检测商品数量
@@ -175,3 +184,77 @@ def get_car_count(user):
     for id,num in car_dict.items():
         total_count+=int(num)
     return total_count
+
+
+def get_count(request):
+    user=request.session.get("login_user")
+    if user:
+        user=User.objects.get(username=user)
+        total_count=get_car_count(user)
+    else:
+        total_count=0
+    return JsonResponse({"total_count": total_count})
+
+@check_user
+def check_car(request):
+    user=User.objects.get(username=request.session.get("login_user"))
+
+    conn = settings.REDIS_CONN
+    car_key = 'car_%d' % user.id
+    car_dict = conn.hgetall(car_key)
+
+    skus=[]
+    total_count=0
+    total_price=0
+
+    for id, num in car_dict.items():
+        #根据商品id获取商品信息
+        sku = GoodsSKU.objects.get(id=id)
+        amount=sku.price * int(num)
+        #动态给sku对象增加amount属性,保存商品小计
+        sku.amount = amount
+        #动态给sku对象增加count属性,保存商品数量
+        sku.count=num
+        skus.append(sku)
+
+        total_count+=int(num)
+        total_price+=amount
+
+    context={
+        "total_count":total_count,
+        "total_price":total_price,
+        "skus":skus
+    }
+    return render(request,"fruits/cart.html",context)
+
+@check_user
+def up_car(request):
+    user=User.objects.get(username=request.session.get("login_user"))
+    id=request.GET.get("sku_id")
+    num=int(request.GET.get("count"))
+    goodssku=GoodsSKU.objects.get(id=id)
+
+    conn = settings.REDIS_CONN
+    car_key = 'car_%d' % user.id
+
+    car_num = conn.hget(car_key, id)
+    if car_num:
+        num = int(num)
+    if num > goodssku.stock:
+        return JsonResponse({"res": 4, "errmsg": "商品库存不足"})
+
+    conn.hset(car_key, id, num)
+    total_count = get_car_count(user)
+    return JsonResponse({"res": 5, "total_count": total_count, "message": "添加成功"})
+
+
+def del_car(request):
+    user = User.objects.get(username=request.session.get("login_user"))
+    id = request.GET.get("sku_id")
+
+    conn = settings.REDIS_CONN
+    car_key = 'car_%d' % user.id
+
+    conn.hdel(car_key, id)
+
+    return JsonResponse({"res": 3,"message": "删除成功"})

@@ -1,60 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<title>天天生鲜-商品列表</title>
-    {% load static from staticfiles %}
-	<link rel="stylesheet" type="text/css" href="{% static "css/reset.css" %}">
-	<link rel="stylesheet" type="text/css" href="{% static "css/main.css" %}">
-</head>
-<body>
-	<div class="header_con">
-		<div class="header">
-			<div class="welcome fl">欢迎来到天天生鲜!</div>
-			<div class="fr">
-				<div class="login_info fl">
-					欢迎您：<em>张 山</em>
-				</div>
-				<div class="login_btn fl">
-					<a href="login.html">登录</a>
-					<span>|</span>
-					<a href="register.html">注册</a>
-				</div>
-				<div class="user_link fl">
-					<span>|</span>
-					<a href="../user/user_center_info.html">用户中心</a>
-					<span>|</span>
-					<a href="cart.html">我的购物车</a>
-					<span>|</span>
-					<a href="../user/user_center_order.html">我的订单</a>
-				</div>
-			</div>
-		</div>		
-	</div>
+{% extends "fruits/base.html" %}
 
-	<div class="search_bar clearfix">
-		<a href="{% url "fruits:index" %}" class="logo fl"><img src="{% static "images/logo.png" %}"></a>
-		<div class="search_con fl">
-			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
-			<input type="button" class="input_btn fr" name="" value="搜索">
-		</div>
-		<div class="guest_cart fr">
-			<a href="#" class="cart_name fl">我的购物车</a>
-			<div class="goods_count fl">1</div>
-		</div>
-	</div>
+{% block title %}{{ title }}{% endblock title %}
 
-	<div class="navbar_con">
-		<div class="navbar clearfix">
-			<div class="subnav_con fl">
-				<h1>全部商品分类</h1>	
-				<span></span>			
-				<ul class="subnav">
-                    {% for i in types %}
-					<li><a href="{% url "fruits:list" i.id 1 %}?sort=1" class="{{ i.logo }}">{{ i.name }}</a></li>
-					{% endfor %}
-				</ul>
-			</div>
+{% block content %}
+    	<div class="navbar_con">
+		<div class="navbar">
+			<h1 class="fl">全部商品分类</h1>
 			<ul class="navlist fl">
 				<li><a href="">首页</a></li>
 				<li class="interval">|</li>
@@ -127,19 +78,6 @@
 		</div>
 	</div>
 
-	<div class="footer">
-		<div class="foot_link">
-			<a href="#">关于我们</a>
-			<span>|</span>
-			<a href="#">联系我们</a>
-			<span>|</span>
-			<a href="#">招聘人才</a>
-			<span>|</span>
-			<a href="#">友情链接</a>		
-		</div>
-		<p>CopyRight © 2016 北京天天生鲜信息技术有限公司 All Rights Reserved</p>
-		<p>电话：010-****888    京ICP备*******8号</p>
-	</div>
-	
-</body>
-</html>
+{% endblock content %}
+
+{% block script %}{% endblock script %}
