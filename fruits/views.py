@@ -8,7 +8,8 @@ from redis import StrictRedis
 from utils.user_util import *
 from django.http import *
 from myfruits import settings
-
+import time
+from django.db import transaction
 
 # Create your views here.
 def index(request):
@@ -185,7 +186,7 @@ def get_car_count(user):
         total_count+=int(num)
     return total_count
 
-
+#查询列表页 获取购物车商品数量
 def get_count(request):
     user=request.session.get("login_user")
     if user:
@@ -223,7 +224,7 @@ def check_car(request):
     context={
         "total_count":total_count,
         "total_price":total_price,
-        "skus":skus
+        "skus":skus,"user":user
     }
     return render(request,"fruits/cart.html",context)
 
@@ -247,7 +248,7 @@ def up_car(request):
     total_count = get_car_count(user)
     return JsonResponse({"res": 5, "total_count": total_count, "message": "添加成功"})
 
-
+@check_user
 def del_car(request):
     user = User.objects.get(username=request.session.get("login_user"))
     id = request.GET.get("sku_id")
@@ -258,3 +259,127 @@ def del_car(request):
     conn.hdel(car_key, id)
 
     return JsonResponse({"res": 3,"message": "删除成功"})
+
+
+@check_user
+def place(request):
+    user = User.objects.get(username=request.session.get("login_user"))
+    total_count = get_car_count(user)
+
+    sku_ids=request.POST.getlist("sku_ids")
+
+    skus=[]
+    sku_id=''
+    money=0
+    num=0
+
+    conn = settings.REDIS_CONN
+    car_key = 'car_%d' % user.id
+    for i in sku_ids:
+        sku=GoodsSKU.objects.get(id=int(i))
+        sku.count=conn.hget(car_key, int(i))
+        sku.money=int(sku.count) * sku.price
+
+        money+=sku.money
+        skus.append(sku)
+
+        i=i+"-"
+        sku_id+=i
+        num+=1
+
+    sites=Site.objects.filter(u_id=user)
+
+    context={
+        "total_count":total_count,"user":user,
+        "money":money,"skus":skus,"sku_id":sku_id,
+        "sites":sites,"num":num
+    }
+
+    return render(request,"fruits/place_order.html",context)
+
+
+@check_user
+@transaction.non_atomic_requests
+def add_order(request):
+    user = User.objects.get(username=request.session.get("login_user"))
+    pay_method=request.GET.get("pay_style")
+    site=Site.objects.get(id=request.GET.get("site_id"))
+
+    sku_id=request.GET.get("sku_id")
+
+    sku_id=sku_id.split("-")
+
+    conn = settings.REDIS_CONN
+    car_key = 'car_%d' % user.id
+    skus=[]
+    moneys=0
+    tim=int(time.time())
+    order_id='%s_%s'%(tim,user.id)
+    ordergoods_list=[]
+
+    # 创建保存点
+    sid = transaction.savepoint()
+    try:
+        order = Order.objects.create(order_id=order_id,user=user,pay_method=pay_method,
+                                     count=0,order_money=0,status=1)
+        ordersite=OrderSite.objects.create(order=order,name=site.sitename,address=site.address,phone=site.sitephone)
+
+        for i in sku_id:
+            if i:
+                print(i)
+                sku=GoodsSKU.objects.get(id=i)
+                count = int(conn.hget(car_key,int(i)))
+                if count>sku.stock:
+                    transaction.savepoint_rollback(sid)
+                    return JsonResponse({"res": 1,"message": "库存不足"})
+                money=count * sku.price
+                print(money)
+                moneys+=money
+                #删除购物车中商品
+                conn.hdel(car_key,i)
+                #修改商品库存
+                GoodsSKU.objects.filter(id=i).update(stock=sku.stock-count)
+                #添加订单详情
+                ordergoods=OrderGoods.objects.create(order=order,name=sku.name,price=sku.price,
+                                                     count=count,money=money,goods=sku)
+                ordergoods_list.append(ordergoods)
+
+        order.count=len(sku_id) -1
+        order.order_money=moneys
+        order.save()
+        transaction.savepoint_commit(sid)
+    except Exception as e:
+        print(e)
+        transaction.savepoint_rollback(sid)
+        return JsonResponse({"res": 2, "message": "%s"%e})
+    context={
+        "user":user,"ordersite":ordersite,"order":order,
+        'ordergoods_list':ordergoods_list,
+    }
+    return redirect(reverse("fruits:check_order"))
+
+
+@check_user
+def check_order(request):
+    user = User.objects.get(username=request.session.get("login_user"))
+
+    order1_l=[]
+    order2_l=[]
+    order_1=Order.objects.filter(user=user,status=1)
+    print(len(order_1))
+    for order in order_1:
+        ordergoods=OrderGoods.objects.filter(order=order)
+        for i in ordergoods:
+            order1_l.append(i)
+    print(len(order1_l))
+    order_2=Order.objects.filter(user=user,status__gt=1)
+    for order in order_2:
+        ordergoods = OrderGoods.objects.filter(order=order)
+        for i in ordergoods:
+            order2_l.append(i)
+
+    context={
+        "user":user,"order1_l":order1_l,"order2_l":order2_l,
+        "order_1":order_1,"order_2":order_2
+    }
+    return render(request,"user/user_center_order.html",context)

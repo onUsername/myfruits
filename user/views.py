@@ -398,6 +398,7 @@ def seach_sheng(request):
 
 def seach_shi(request):
     sheng_id = request.GET.get("sheng_id")
+    print(sheng_id)
     shi_list = TArea.objects.filter(parentid=sheng_id)
     content = {
         "shi_list":serializers.serialize("json",shi_list)
@@ -415,4 +416,4 @@ def seach_xian(request):
     return JsonResponse(content)
 
 def index(requests):
-    return render(requests, "user/index.html")
+    return render(requests, "fruits/index.html")

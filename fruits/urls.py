@@ -11,4 +11,7 @@ urlpatterns = [
     url(r'^check_car/$', views.check_car, name="check_car"),
     url(r'^up_car/$', views.up_car, name="up_car"),
     url(r'^del_car/$', views.del_car, name="del_car"),
+    url(r'^place/$', views.place, name="place"),
+    url(r'^add_order/$', views.add_order, name="add_order"),
+    url(r'^check_order/$', views.check_order, name="check_order"),
     ]

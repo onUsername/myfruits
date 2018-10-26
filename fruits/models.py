@@ -1,6 +1,6 @@
 from django.db import models
 from tinymce.models import HTMLField
-from user.models import User
+# from user.models import *
 
 # Create your models here.
 
@@ -103,26 +103,53 @@ class IndexPromotionBanner(models.Model):
         verbose_name_plural=verbose_name
 
 
-# class GoodsComment(models.Model):
-#     user=models.ForeignKey('User')
-#     goods=models.ForeignKey('GoodsSKU')
-#
-#     com=models.CharField(max_length=256,verbose_name='评论')
-#     com_time=models.TimeField()
-#     pid=models.ForeignKey('GoodsComment',default=-1)
-#
-#     class Meta:
-#         abstract = True
+class GoodsComment(models.Model):
+    user=models.ForeignKey('user.User')
+    goods=models.ForeignKey('GoodsSKU')
+    com=models.CharField(max_length=256,verbose_name='评论')
+    com_time=models.TimeField()
+    pid=models.ForeignKey('GoodsComment',default=-1)
 
 
-# class car(models.Model):
-#     user=models.ForeignKey("User")
-#     goods=models.ForeignKey("GoodsSKU")
-#     num=models.IntegerField(max_length=20,default=1)
-#
-#     class Meta:
-#         abstract = True
 
 
-# class Order(models.Model):
-#     user=models.ForeignKey("User")
+class Order(models.Model):
+    PAY_METHOD=(
+        (1,"货到付款"),
+        (2,"微信支付"),
+        (3,"支付宝"),
+        (4,"银联支付")
+    )
+    ORDER_STATUS=(
+        (1,"待支付"),
+        (2,"代发货"),
+        (3,"代收货"),
+        (4,"待评价"),
+        (5,"已完成")
+    )
+    order_id=models.CharField(max_length=128,primary_key=True,verbose_name="订单id")
+    user=models.ForeignKey("user.User",verbose_name="用户")
+    status=models.SmallIntegerField(choices=ORDER_STATUS,default=1,verbose_name="订单状态")
+    pay_method=models.SmallIntegerField(choices=ORDER_STATUS,default=3,verbose_name="付款方式")
+    count = models.IntegerField(default=1, verbose_name="商品数量")
+    order_money = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品价格")
+
+
+
+class OrderGoods(models.Model):
+    """订单详情"""
+    order=models.ForeignKey("Order",verbose_name="订单")
+    name=models.CharField(max_length=50,verbose_name="商品名称")
+    price=models.DecimalField(max_digits=10,decimal_places=2,verbose_name="商品单价")
+    count=models.IntegerField(default=1,verbose_name="商品数量")
+    money=models.DecimalField(max_digits=10,decimal_places=2,verbose_name="商品价格")
+    goods=models.ForeignKey("GoodsSKU",verbose_name="商品",default=1)
+
+
+class OrderSite(models.Model):
+    """订单地址"""
+    order=models.ForeignKey("Order",verbose_name="订单")
+    name=models.CharField(max_length=50,verbose_name="收货人")
+    address=models.CharField(max_length=100,verbose_name="具体收货地址")
+    phone=models.CharField(max_length=15,verbose_name="收货人电话")
+

@@ -12,9 +12,11 @@
 		<li class="col05">小计</li>
 		<li class="col06">操作</li>
 	</ul>
+    <form action="{% url "fruits:place" %}" method="post">
+    {% csrf_token %}
     {% for i in skus %}
 	<ul class="cart_list_td clearfix" id="a{{ i.id }}">
-		<li class="col01"><input type="checkbox" name="" checked></li>
+		<li class="col01"><input type="checkbox" name="sku_ids" value="{{ i.id }}" checked></li>
 		<li class="col02"><img src="{{ i.image.url }}"></li>
 		<li class="col03">{{ i.name }}<br><em>{{ i.price }}元/{{ i.untie }}</em></li>
 		<li class="col04">{{ i.unite }}</li>
@@ -52,28 +54,13 @@
 		<li class="col01"><input type="checkbox" name="" checked=""></li>
 		<li class="col02">全选</li>
 		<li class="col03">合计(不含运费)：<span>¥</span><em>{{ total_price }}</em><br>共计<b>{{ total_count }}</b>件商品</li>
-		<li class="col04"><a href="place_order.html">去结算</a></li>
+		<li class="col04"><a><input type="submit" value="去结算" style="width:100%;height:100%"></a></li>
 	</ul>
+    </form>
 {% endblock content %}
 
 {% block script %}
     <script>
-{#     function up_car() {#}
-{#         $.ajax({#}
-{#             "url":"{% url "fruits:up_car" %}",#}
-{#             "data":{#}
-{#                    "id":{{ i.id }},#}
-{#                    "num":$(".num_show").val()#}
-{#             },#}
-{#             "success":function (data) {#}
-{#                 if(data.res==5){#}
-{#                     $(".num_show").val(data.total_count)#}
-{#                 }else{#}
-{#                     alert(data.errmsg)#}
-{#                 }#}
-{#             }#}
-{#         })#}
-{#     }#}
      function update_page_info() {
             total_count = 0
             total_price = 0
